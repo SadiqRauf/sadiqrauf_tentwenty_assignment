@@ -17,6 +17,13 @@ export type RootStackParamList = {
     releaseDate: string;
   };
   Trailer: { videoKey: string; title: string };
+  Showtimes: { movieId: number; title: string; releaseDate: string };
+  SeatSelection: {
+    movieId: number;
+    title: string;
+    date: string;
+    showtimeId: string;
+  };
 };
 
 declare global {

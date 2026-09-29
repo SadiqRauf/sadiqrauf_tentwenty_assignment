@@ -104,6 +104,13 @@ export function MovieDetailScreen({ route, navigation }: Props) {
           imageUri={imageUri}
           releaseLabel={formatReleaseLabel(movie?.release_date ?? releaseDate)}
           trailer={trailerAction}
+          onGetTickets={() =>
+            navigation.navigate('Showtimes', {
+              movieId,
+              title,
+              releaseDate: movie?.release_date ?? releaseDate,
+            })
+          }
           onBack={navigation.goBack}
         />
         {renderBody()}

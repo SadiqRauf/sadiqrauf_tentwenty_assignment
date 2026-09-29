@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomScrim } from '../../components/BottomScrim';
+import { Button } from '../../components/Button';
 import { colors, spacing, typography } from '../../theme';
 import { TrailerButton } from './TrailerButton';
 
-/** Share of the screen height the artwork occupies, per the design. */
 const HEADER_HEIGHT_RATIO = 0.57;
 
 interface DetailHeaderProps {
@@ -20,6 +20,7 @@ interface DetailHeaderProps {
   imageUri?: string;
   releaseLabel?: string;
   trailer?: { loading: boolean; onPress?: () => void };
+  onGetTickets: () => void;
   onBack: () => void;
 }
 
@@ -28,6 +29,7 @@ export function DetailHeader({
   imageUri,
   releaseLabel,
   trailer,
+  onGetTickets,
   onBack,
 }: DetailHeaderProps) {
   const { height } = useWindowDimensions();
@@ -63,9 +65,20 @@ export function DetailHeader({
         {releaseLabel ? (
           <Text style={styles.release}>{releaseLabel}</Text>
         ) : null}
-        {trailer ? (
-          <TrailerButton loading={trailer.loading} onPress={trailer.onPress} />
-        ) : null}
+        <View style={styles.actions}>
+          <Button
+            label="Get Tickets"
+            size="large"
+            onPress={onGetTickets}
+            style={styles.action}
+          />
+          {trailer ? (
+            <TrailerButton
+              loading={trailer.loading}
+              onPress={trailer.onPress}
+            />
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -92,6 +105,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.lg,
+  },
+  actions: {
+    gap: spacing.sm + 2,
+    marginTop: spacing.xs,
+  },
+  action: {
+    width: 243,
   },
   release: {
     ...typography.releaseLabel,

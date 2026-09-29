@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MovieDetailScreen } from '../screens/MovieDetail';
+import { SeatSelectionScreen } from '../screens/SeatSelection';
+import { ShowtimesScreen } from '../screens/Showtimes';
 import { TrailerScreen } from '../screens/Trailer';
 import { TabNavigator } from './TabNavigator';
 import type { RootStackParamList } from './types';
@@ -13,6 +15,8 @@ export function RootNavigator() {
     >
       <Stack.Screen name="Tabs" component={TabNavigator} />
       <Stack.Screen name="MovieDetail" component={MovieDetailScreen} />
+      <Stack.Screen name="Showtimes" component={ShowtimesScreen} />
+      <Stack.Screen name="SeatSelection" component={SeatSelectionScreen} />
       <Stack.Screen
         name="Trailer"
         component={TrailerScreen}
