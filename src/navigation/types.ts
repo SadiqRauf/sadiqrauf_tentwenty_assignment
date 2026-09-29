@@ -1,8 +1,16 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
+export type WatchStackParamList = {
+  MovieList: undefined;
+  Search: undefined;
+  SearchResults:
+    | { kind: 'query'; query: string }
+    | { kind: 'genre'; genreId: number; genreName: string };
+};
+
 export type TabParamList = {
   Dashboard: undefined;
-  Watch: undefined;
+  Watch: NavigatorScreenParams<WatchStackParamList>;
   MediaLibrary: undefined;
   More: undefined;
 };

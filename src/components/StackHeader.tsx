@@ -6,10 +6,16 @@ import { colors, spacing, typography } from '../theme';
 interface StackHeaderProps {
   title: string;
   subtitle?: string;
+  align?: 'center' | 'left';
   onBack: () => void;
 }
 
-export function StackHeader({ title, subtitle, onBack }: StackHeaderProps) {
+export function StackHeader({
+  title,
+  subtitle,
+  align = 'center',
+  onBack,
+}: StackHeaderProps) {
   const { top } = useSafeAreaInsets();
 
   return (
@@ -24,7 +30,7 @@ export function StackHeader({ title, subtitle, onBack }: StackHeaderProps) {
         >
           <ChevronLeft color={colors.textPrimary} size={24} />
         </Pressable>
-        <View style={styles.titles}>
+        <View style={align === 'center' ? styles.titles : styles.titlesLeft}>
           <Text
             style={styles.title}
             numberOfLines={1}
@@ -66,6 +72,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     marginRight: BACK_SLOT,
+  },
+  titlesLeft: {
+    flex: 1,
   },
   title: {
     ...typography.screenTitle,

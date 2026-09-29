@@ -1,29 +1,32 @@
-import { useNavigation } from '@react-navigation/native';
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 import { CloudOff, Film, Search } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { Button } from '../../components/Button';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { PaginationFooter } from '../../components/PaginationFooter';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { StateMessage } from '../../components/StateMessage';
 import { useTabBarHeight } from '../../components/TabBar';
+import { useOpenMovie } from '../../hooks/useOpenMovie';
 import {
   useRefreshUpcomingMovies,
   useUpcomingMovies,
 } from '../../hooks/useUpcomingMovies';
+import type { WatchStackParamList } from '../../navigation/types';
 import type { MovieSummary } from '../../services/tmdb';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing } from '../../theme';
 import { MovieCard } from './MovieCard';
 import { MovieListSkeleton } from './MovieListSkeleton';
 
 const keyExtractor = (movie: MovieSummary) => String(movie.id);
 const ItemSeparator = () => <View style={styles.separator} />;
 
-export function MovieListScreen() {
+type Props = NativeStackScreenProps<WatchStackParamList, 'MovieList'>;
+
+export function MovieListScreen({ navigation }: Props) {
   const tabBarHeight = useTabBarHeight();
-  const navigation = useNavigation();
   const {
-    data: movies,
+    data,
     error,
     isPending,
     isError,
@@ -33,19 +36,10 @@ export function MovieListScreen() {
     isFetchingNextPage,
     isFetchNextPageError,
   } = useUpcomingMovies();
+  const movies = data?.movies;
   const refreshFromStart = useRefreshUpcomingMovies();
 
-  const openMovie = useCallback(
-    (movie: MovieSummary) =>
-      navigation.navigate('MovieDetail', {
-        movieId: movie.id,
-        title: movie.title,
-        posterPath: movie.poster_path,
-        backdropPath: movie.backdrop_path,
-        releaseDate: movie.release_date,
-      }),
-    [navigation],
-  );
+  const openMovie = useOpenMovie();
   const renderItem = useCallback<ListRenderItem<MovieSummary>>(
     ({ item }) => <MovieCard movie={item} onPress={openMovie} />,
     [openMovie],
@@ -67,33 +61,24 @@ export function MovieListScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
-  const renderFooter = () => {
-    if (isFetchingNextPage) {
-      return (
-        <ActivityIndicator style={styles.footer} color={colors.textPrimary} />
-      );
-    }
-    if (isFetchNextPageError) {
-      return (
-        <View style={[styles.footer, styles.footerError]}>
-          <Text style={styles.footerText}>Couldn't load more movies.</Text>
-          <Button label="Retry" onPress={() => fetchNextPage()} />
-        </View>
-      );
-    }
-    return null;
-  };
+  const renderFooter = () => (
+    <PaginationFooter
+      isFetchingNextPage={isFetchingNextPage}
+      isFetchNextPageError={isFetchNextPageError}
+      onRetry={fetchNextPage}
+    />
+  );
 
   const renderContent = () => {
     if (isPending) {
       return <MovieListSkeleton />;
     }
-    if (isError && !movies) {
+    if (isError || !movies) {
       return (
         <StateMessage
           icon={CloudOff}
           title="Couldn't load upcoming movies"
-          message={error.message}
+          message={error?.message}
           action={{ label: 'Try again', onPress: () => refetch() }}
         />
       );
@@ -132,7 +117,16 @@ export function MovieListScreen() {
     <View style={styles.screen}>
       <ScreenHeader
         title="Watch"
-        right={<Search color={colors.textPrimary} size={18} />}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Search movies"
+            onPress={() => navigation.navigate('Search')}
+            hitSlop={12}
+          >
+            <Search color={colors.textPrimary} size={18} />
+          </Pressable>
+        }
       />
       <View style={[styles.body, isPending && { paddingBottom: tabBarHeight }]}>
         {renderContent()}
@@ -155,16 +149,5 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.lg,
-  },
-  footer: {
-    paddingVertical: spacing.lg,
-  },
-  footerError: {
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  footerText: {
-    ...typography.body,
-    color: colors.textSecondary,
   },
 });

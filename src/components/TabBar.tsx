@@ -1,6 +1,7 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardVisible } from '../hooks/useKeyboardVisible';
 import { colors, radii, typography } from '../theme';
 
 const BAR_CONTENT_HEIGHT = 75;
@@ -14,6 +15,11 @@ export function useTabBarHeight() {
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const height = useTabBarHeight();
   const { bottom } = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardVisible();
+
+  if (keyboardVisible) {
+    return null;
+  }
 
   return (
     <View style={[styles.bar, { height, paddingBottom: bottom }]}>

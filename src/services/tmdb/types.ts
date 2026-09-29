@@ -12,6 +12,7 @@ export interface MovieSummary {
   release_date: string;
   backdrop_path: string | null;
   poster_path: string | null;
+  genre_ids?: number[];
 }
 
 export interface Genre {

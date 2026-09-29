@@ -48,3 +48,14 @@ export function formatReleaseLabel(
   const prefix = date >= startOfDay(now) ? 'In Theaters' : 'Released';
   return `${prefix} ${longDateFormatter.format(date)}`;
 }
+
+const countFormatter = new Intl.NumberFormat('en-US');
+
+export function formatResultCount(total: number | undefined): string {
+  if (total === undefined) {
+    return 'Searching…';
+  }
+  return `${countFormatter.format(total)} ${
+    total === 1 ? 'Result' : 'Results'
+  } Found`;
+}

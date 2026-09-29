@@ -7,9 +7,9 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { TabBar } from '../components/TabBar';
-import { MovieListScreen } from '../screens/MovieList';
 import { PlaceholderScreen } from '../screens/Placeholder/PlaceholderScreen';
 import type { TabParamList } from './types';
+import { WatchNavigator } from './WatchNavigator';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -40,7 +40,7 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Watch"
-        component={MovieListScreen}
+        component={WatchNavigator}
         options={{ tabBarIcon: tabIcon(SquarePlay) }}
       />
       <Tab.Screen

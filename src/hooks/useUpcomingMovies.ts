@@ -1,29 +1,14 @@
-import {
-  useInfiniteQuery,
-  useQueryClient,
-  type InfiniteData,
-} from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import {
-  getUpcomingMovies,
-  type MovieSummary,
-  type Paginated,
-} from '../services/tmdb';
-import { uniqueById } from '../utils/uniqueById';
+import { getUpcomingMovies } from '../services/tmdb';
+import { useInfiniteMovies, type MoviePages } from './useInfiniteMovies';
 
 export const upcomingMoviesKey = ['movies', 'upcoming'] as const;
 
-const flattenPages = (data: InfiniteData<Paginated<MovieSummary>, number>) =>
-  uniqueById(data.pages.flatMap(page => page.results));
-
 export function useUpcomingMovies() {
-  return useInfiniteQuery({
+  return useInfiniteMovies({
     queryKey: upcomingMoviesKey,
-    queryFn: ({ pageParam, signal }) => getUpcomingMovies(pageParam, signal),
-    initialPageParam: 1,
-    getNextPageParam: lastPage =>
-      lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,
-    select: flattenPages,
+    fetchPage: getUpcomingMovies,
   });
 }
 
@@ -31,7 +16,7 @@ export function useRefreshUpcomingMovies() {
   const queryClient = useQueryClient();
 
   return useCallback(async () => {
-    queryClient.setQueryData<InfiniteData<Paginated<MovieSummary>, number>>(
+    queryClient.setQueryData<MoviePages>(
       upcomingMoviesKey,
       data =>
         data && {
