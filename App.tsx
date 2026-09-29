@@ -1,45 +1,31 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RootNavigator } from './src/navigation/RootNavigator';
+import { subscribeAppFocus } from './src/services/appFocus';
+import { queryClient } from './src/services/queryClient';
+import { colors } from './src/theme';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: colors.background },
+};
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  useEffect(subscribeAppFocus, []);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <StatusBar barStyle="dark-content" />
+        <NavigationContainer theme={navigationTheme}>
+          <RootNavigator />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
