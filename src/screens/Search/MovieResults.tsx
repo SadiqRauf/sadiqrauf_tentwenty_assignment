@@ -99,15 +99,16 @@ export function MovieResults({
   return (
     <View style={styles.container}>
       {body ? (
-        <>
+        <View style={[styles.state, { paddingBottom: tabBarHeight }]}>
           {header}
           {body}
-        </>
+        </View>
       ) : (
         <FlashList
           data={data?.movies}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={Separator}
           ListHeaderComponent={header}
           ListFooterComponent={
@@ -122,7 +123,7 @@ export function MovieResults({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentContainerStyle={{
-            paddingHorizontal: spacing.lg,
+            paddingHorizontal: HORIZONTAL_INSET,
             paddingBottom: tabBarHeight + spacing.lg,
           }}
           scrollIndicatorInsets={{ bottom: tabBarHeight }}
@@ -132,9 +133,15 @@ export function MovieResults({
   );
 }
 
+const HORIZONTAL_INSET = spacing.lg;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  state: {
+    flex: 1,
+    paddingHorizontal: HORIZONTAL_INSET,
   },
   separator: {
     height: spacing.lg,

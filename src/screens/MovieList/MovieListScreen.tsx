@@ -98,6 +98,7 @@ export function MovieListScreen({ navigation }: Props) {
         data={movies}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={ItemSeparator}
         ListFooterComponent={renderFooter}
         onEndReached={onEndReached}

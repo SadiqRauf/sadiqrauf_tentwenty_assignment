@@ -43,6 +43,7 @@ export function GenreGrid({ onSelect }: { onSelect: (tile: Tile) => void }) {
       data={tiles}
       keyExtractor={keyExtractor}
       numColumns={2}
+      showsVerticalScrollIndicator={false}
       renderItem={({ item }) => <GenreTile tile={item} onPress={onSelect} />}
       columnWrapperStyle={styles.gap}
       contentContainerStyle={[contentStyle, styles.gap]}
