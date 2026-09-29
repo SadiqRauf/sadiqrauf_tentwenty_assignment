@@ -1,8 +1,14 @@
-import { TMDB_ACCESS_TOKEN, TMDB_API_KEY } from '@env';
+import { TMDB_ACCESS_TOKEN, TMDB_API_KEY, TMDB_BASE_URL } from '@env';
+
+const DEFAULT_TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 export const env = {
   tmdbAccessToken: TMDB_ACCESS_TOKEN?.trim() ?? '',
   tmdbApiKey: TMDB_API_KEY?.trim() ?? '',
+  tmdbBaseUrl: (TMDB_BASE_URL?.trim() || DEFAULT_TMDB_BASE_URL).replace(
+    /\/+$/,
+    '',
+  ),
 } as const;
 
 if (__DEV__ && !env.tmdbAccessToken && !env.tmdbApiKey) {

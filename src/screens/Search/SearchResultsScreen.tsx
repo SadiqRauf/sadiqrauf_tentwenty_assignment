@@ -28,6 +28,7 @@ function QueryResults({
         result={result}
         emptyTitle={`No results for "${query}"`}
         emptyMessage="Check the spelling or try another title."
+        errorTitle="Search isn't available right now"
         header={<View style={styles.spacer} />}
       />
     </>
@@ -50,6 +51,7 @@ function GenreResults({
       <MovieResults
         result={result}
         emptyTitle={`No ${genreName.toLowerCase()} yet`}
+        errorTitle={`Couldn't load ${genreName.toLowerCase()}`}
         header={<View style={styles.spacer} />}
       />
     </>

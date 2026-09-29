@@ -16,6 +16,7 @@ interface MovieResultsProps {
   result: ReturnType<typeof useInfiniteMovies>;
   emptyTitle: string;
   emptyMessage?: string;
+  errorTitle: string;
   header?: ReactElement;
 }
 
@@ -26,6 +27,7 @@ export function MovieResults({
   result,
   emptyTitle,
   emptyMessage,
+  errorTitle,
   header,
 }: MovieResultsProps) {
   const tabBarHeight = useTabBarHeight();
@@ -74,7 +76,7 @@ export function MovieResults({
       return (
         <StateMessage
           icon={CloudOff}
-          title="Search isn't available right now"
+          title={errorTitle}
           message={error?.message}
           action={{ label: 'Try again', onPress: () => refetch() }}
         />

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
-import type { SeatRow } from '../services/booking';
+import { columnCount, type SeatRow } from '../services/booking';
 import { colors } from '../theme';
 import { seatColor } from './seatColor';
 
@@ -18,7 +18,7 @@ export const HallPreview = memo(function HallPreviewView({
   width,
   height,
 }: HallPreviewProps) {
-  const columns = Math.max(...layout.map(row => row.cells.length));
+  const columns = columnCount(layout);
   const cell = Math.min(
     (width - PADDING * 2) / columns,
     (height - PADDING - SCREEN_AREA) / layout.length,

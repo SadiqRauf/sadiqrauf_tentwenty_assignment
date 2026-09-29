@@ -1,5 +1,9 @@
-const mockEnv = { tmdbAccessToken: 'test-token', tmdbApiKey: '' };
-// Getter defers the read: jest.mock is hoisted above this file's const declarations.
+const mockEnv = {
+  tmdbAccessToken: 'test-token',
+  tmdbApiKey: '',
+  tmdbBaseUrl: 'https://api.themoviedb.org/3',
+};
+
 jest.mock('../src/config/env', () => ({
   get env() {
     return mockEnv;

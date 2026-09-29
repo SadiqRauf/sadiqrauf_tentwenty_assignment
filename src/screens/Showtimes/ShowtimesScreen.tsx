@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -78,7 +77,6 @@ export function ShowtimesScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" />
       <StackHeader
         title={title}
         subtitle={formatReleaseLabel(releaseDate)}

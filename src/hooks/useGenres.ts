@@ -8,6 +8,7 @@ import {
   type MovieSummary,
   type Paginated,
 } from '../services/tmdb';
+import { queryKeys } from '../services/queryKeys';
 
 const DAY = 24 * 60 * 60 * 1000;
 const ARTWORK_PAGES = [1, 2, 3];
@@ -26,7 +27,7 @@ const DISPLAY_NAMES: Record<string, string> = {
 
 export function useGenres() {
   return useQuery({
-    queryKey: ['genres', 'movie'],
+    queryKey: queryKeys.genres.list(),
     queryFn: ({ signal }) => getMovieGenres(signal),
     // The genre list changes a few times a decade.
     staleTime: DAY,
@@ -69,15 +70,10 @@ export function assignGenreArtwork(
   });
 }
 
-/**
- * Genre tiles for the search landing grid. Artwork comes from a few pages of popular
- * films (3 requests) rather than one discover request per genre (~19). Niche genres that
- * popular films never cover (documentary, history...) then get one request each.
- */
 export function useGenreTiles() {
   const genres = useGenres();
   const artwork = useQuery({
-    queryKey: ['genres', 'artwork'],
+    queryKey: queryKeys.genres.popularArtwork(),
     queryFn: async ({ signal }) => {
       const pages = await Promise.all(
         ARTWORK_PAGES.map(page => getPopularMovies(page, signal)),
@@ -93,7 +89,6 @@ export function useGenreTiles() {
     [genres.data, artwork.data],
   );
 
-  // Only once the popular pages have landed, or every tile would look "missing".
   const missingIds = useMemo(
     () =>
       artwork.data
@@ -105,8 +100,7 @@ export function useGenreTiles() {
   );
   const fallbackBackdrops = useQueries({
     queries: missingIds.map(genreId => ({
-      // Its own key: ['movies', 'genre', id] is the paginated results screen's cache.
-      queryKey: ['genres', 'artwork', genreId],
+      queryKey: queryKeys.genres.genreArtwork(genreId),
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         discoverMoviesByGenre(genreId, 1, signal),
       select: firstBackdrop,
@@ -128,7 +122,6 @@ export function useGenreTiles() {
 
   return {
     tiles,
-    // Tiles render as soon as names arrive; artwork fills in when it lands.
     isPending: genres.isPending,
     isError: genres.isError,
     refetch: genres.refetch,

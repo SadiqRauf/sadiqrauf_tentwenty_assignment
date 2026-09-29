@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { SeatGlyph } from '../../components/SeatGlyph';
 import { seatColor } from '../../components/seatColor';
-import type { Seat, SeatRow } from '../../services/booking';
+import { columnCount, type Seat, type SeatRow } from '../../services/booking';
 import { colors, fonts, spacing, typography } from '../../theme';
 
 export const ROW_LABEL_WIDTH = 16;
@@ -54,7 +54,7 @@ export function SeatMap({
   prices,
   onToggle,
 }: SeatMapProps) {
-  const columns = Math.max(...layout.map(row => row.cells.length));
+  const columns = columnCount(layout);
   const seatsWidth = columns * cellSize;
 
   return (

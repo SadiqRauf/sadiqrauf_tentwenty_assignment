@@ -1,12 +1,11 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Minus, Plus, TicketX } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -16,16 +15,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { StackHeader } from '../../components/StackHeader';
 import { StateMessage } from '../../components/StateMessage';
+import { MAX_SEATS, useSeatSelection } from '../../hooks/useSeatSelection';
 import { useShowtime } from '../../hooks/useShowtimes';
 import type { RootStackParamList } from '../../navigation/types';
-import type { Seat } from '../../services/booking';
+import { columnCount } from '../../services/booking';
 import { colors, radii, spacing, typography } from '../../theme';
 import { formatLongDate } from '../../utils/format';
 import { ROW_LABEL_WIDTH, SeatMap } from './SeatMap';
 import { SeatLegend } from './SeatLegend';
 import { SelectedSeatChips } from './SelectedSeatChips';
 
-const MAX_SEATS = 8;
 const ZOOM_LEVELS = [1, 1.5, 2.25];
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SeatSelection'>;
@@ -36,39 +35,18 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
   const { bottom } = useSafeAreaInsets();
   const { data: showtime, isPending } = useShowtime(movieId, date, showtimeId);
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoomIndex, setZoomIndex] = useState(0);
+  const { selectedIds, selectedSeats, total, toggle, rejections } =
+    useSeatSelection(showtime);
 
-  const seatsById = useMemo(() => {
-    const map = new Map<string, Seat>();
-    showtime?.layout.forEach(row =>
-      row.cells.forEach(cell => cell && map.set(cell.id, cell)),
-    );
-    return map;
-  }, [showtime]);
-  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-  const selectedSeats = selectedIds
-    .map(id => seatsById.get(id))
-    .filter((seat): seat is Seat => seat !== undefined);
-  const total = showtime
-    ? selectedSeats.reduce((sum, seat) => sum + showtime.prices[seat.kind], 0)
-    : 0;
-
-  const onToggle = useCallback((seat: Seat) => {
-    setSelectedIds(ids => {
-      if (ids.includes(seat.id)) {
-        return ids.filter(id => id !== seat.id);
-      }
-      if (ids.length >= MAX_SEATS) {
-        Alert.alert(
-          'Seat limit reached',
-          `You can book up to ${MAX_SEATS} seats at once.`,
-        );
-        return ids;
-      }
-      return [...ids, seat.id];
-    });
-  }, []);
+  useEffect(() => {
+    if (rejections > 0) {
+      Alert.alert(
+        'Seat limit reached',
+        `You can book up to ${MAX_SEATS} seats at once.`,
+      );
+    }
+  }, [rejections]);
 
   const onProceed = () => {
     const seatList = selectedSeats
@@ -77,7 +55,6 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
     Alert.alert(
       'Seats reserved',
       `${seatList}\nTotal: $${total}\n\nPayment isn't part of this demo.`,
-      // Back past the date picker to the movie, where the journey started.
       [{ text: 'Done', onPress: () => navigation.pop(2) }],
     );
   };
@@ -104,13 +81,12 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
     );
   }
 
-  const columns = Math.max(...showtime.layout.map(row => row.cells.length));
+  const columns = columnCount(showtime.layout);
   const fitCellSize = (width - spacing.lg * 2 - ROW_LABEL_WIDTH) / columns;
   const cellSize = fitCellSize * ZOOM_LEVELS[zoomIndex];
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" />
       <StackHeader
         title={title}
         subtitle={`${formatLongDate(date)}  |  ${showtime.time} ${
@@ -128,9 +104,9 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
             <SeatMap
               layout={showtime.layout}
               cellSize={cellSize}
-              selectedIds={selectedSet}
+              selectedIds={selectedIds}
               prices={showtime.prices}
-              onToggle={onToggle}
+              onToggle={toggle}
             />
           </ScrollView>
         </ScrollView>
@@ -153,7 +129,7 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
       <View style={[styles.panel, { paddingBottom: bottom + spacing.lg }]}>
         <SeatLegend prices={showtime.prices} />
         <View style={styles.chips}>
-          <SelectedSeatChips seats={selectedSeats} onRemove={onToggle} />
+          <SelectedSeatChips seats={selectedSeats} onRemove={toggle} />
         </View>
         <View style={styles.checkout}>
           <View style={styles.total} accessible>

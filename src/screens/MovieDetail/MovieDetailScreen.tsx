@@ -1,20 +1,18 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CloudOff } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StateMessage } from '../../components/StateMessage';
 import { useMovieDetails } from '../../hooks/useMovieDetails';
+import { useStatusBarStyle } from '../../hooks/useStatusBar';
 import type { RootStackParamList } from '../../navigation/types';
-import { pickTrailer, rankImages, tmdbImageUrl } from '../../services/tmdb';
+import { pickTrailer, tmdbImageUrl } from '../../services/tmdb';
 import { colors, spacing, typography } from '../../theme';
 import { formatReleaseLabel } from '../../utils/format';
 import { DetailBodySkeleton } from './DetailBodySkeleton';
 import { DetailHeader } from './DetailHeader';
 import { GenreChips } from './GenreChips';
-import { ImageStrip } from './ImageStrip';
-
-const MAX_GALLERY_IMAGES = 10;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieDetail'>;
 
@@ -22,21 +20,14 @@ export function MovieDetailScreen({ route, navigation }: Props) {
   const { movieId, title, posterPath, backdropPath, releaseDate } =
     route.params;
   const { bottom } = useSafeAreaInsets();
+  useStatusBarStyle('light-content');
   const { data: movie, error, isPending, refetch } = useMovieDetails(movieId);
 
   const trailer = useMemo(
     () => movie && pickTrailer(movie.videos.results),
     [movie],
   );
-  const gallery = useMemo(
-    () =>
-      movie
-        ? rankImages(movie.images.backdrops).slice(0, MAX_GALLERY_IMAGES)
-        : [],
-    [movie],
-  );
 
-  // The header renders from route params straight away; only the body waits on the request.
   const imageUri =
     tmdbImageUrl(posterPath, 'w780') ?? tmdbImageUrl(backdropPath, 'w780');
   const trailerAction = isPending
@@ -80,21 +71,12 @@ export function MovieDetailScreen({ route, navigation }: Props) {
             {movie.overview || 'No overview is available for this movie yet.'}
           </Text>
         </View>
-        {gallery.length > 0 ? (
-          <View style={styles.gallery}>
-            <Text style={[styles.sectionTitle, styles.galleryTitle]}>
-              Images
-            </Text>
-            <ImageStrip images={gallery} inset={spacing.xxl} />
-          </View>
-        ) : null}
       </>
     );
   };
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <ScrollView
         contentContainerStyle={{ paddingBottom: bottom + spacing.xl }}
         showsVerticalScrollIndicator={false}

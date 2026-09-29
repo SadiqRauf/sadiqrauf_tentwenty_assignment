@@ -1,6 +1,5 @@
 import { env } from '../../config/env';
 
-const BASE_URL = 'https://api.themoviedb.org/3';
 
 type QueryParams = Record<string, string | number | undefined>;
 
@@ -46,7 +45,7 @@ export async function tmdbGet<T>(
   const auth = authFor(params);
   let response: Response;
   try {
-    response = await fetch(`${BASE_URL}${path}${buildQuery(auth.params)}`, {
+    response = await fetch(`${env.tmdbBaseUrl}${path}${buildQuery(auth.params)}`, {
       headers: { Accept: 'application/json', ...auth.headers },
       signal,
     });

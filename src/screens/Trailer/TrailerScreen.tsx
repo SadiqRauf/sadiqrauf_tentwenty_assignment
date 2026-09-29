@@ -6,7 +6,6 @@ import {
   Linking,
   Platform,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -18,6 +17,7 @@ import YoutubePlayer, {
   PLAYER_STATES,
 } from 'react-native-youtube-iframe';
 import { Button } from '../../components/Button';
+import { useHiddenStatusBar } from '../../hooks/useStatusBar';
 import type { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme';
 
@@ -38,6 +38,7 @@ export function TrailerScreen({ route, navigation }: Props) {
   const { videoKey, title } = route.params;
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  useHiddenStatusBar();
   const [status, setStatus] = useState<Status>('loading');
   const [errorMessage, setErrorMessage] = useState(FALLBACK_ERROR);
 
@@ -76,8 +77,6 @@ export function TrailerScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar hidden />
-
       {status === 'error' ? (
         <View style={styles.message}>
           <TriangleAlert

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { queryKeys } from '../services/queryKeys';
 import { discoverMoviesByGenre, searchMovies } from '../services/tmdb';
 import { useInfiniteMovies } from './useInfiniteMovies';
 
@@ -13,7 +14,7 @@ export function useMovieSearch(query: string) {
     [normalised],
   );
   return useInfiniteMovies({
-    queryKey: ['movies', 'search', normalised],
+    queryKey: queryKeys.movies.search(normalised),
     fetchPage,
     enabled: normalised.length > 0,
     keepPrevious: true,
@@ -27,7 +28,7 @@ export function useMoviesByGenre(genreId: number) {
     [genreId],
   );
   return useInfiniteMovies({
-    queryKey: ['movies', 'genre', genreId],
+    queryKey: queryKeys.movies.genre(genreId),
     fetchPage,
   });
 }
