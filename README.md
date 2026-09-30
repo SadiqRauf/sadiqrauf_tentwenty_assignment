@@ -35,6 +35,14 @@ cd ios && bundle install && bundle exec pod install && cd ..
    If both credentials are set, the access token wins: headers stay out of URLs, which are more
    likely to end up in logs.
 
+
+## .env
+<!-- TMDB_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhNWU1YjhjNjJkMjk5Mjc3ZTMzYTNhMGI3MjdjYjU0YSIsIm5iZiI6MTc5MDY3NjE4NS4zNTY5OTk5LCJzdWIiOiI2YWJiOGNkOTU0ZDExZTk5Yjc4MGIzODgiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.jyGUmafvRawlZGtTovcgD1UiKbmjqVayoIAp1WFO5FE
+
+TMDB_API_KEY=a5e5b8c62d299277e33a3a0b727cb54a
+
+BASE_URL=https://api.themoviedb.org/3 -->
+
 ## Run
 
 ```sh
