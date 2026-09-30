@@ -1,6 +1,7 @@
 import { Ellipsis, ImageOff } from 'lucide-react-native';
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useReconnectCount } from '../../hooks/useIsOnline';
 import { tmdbImageUrl, type MovieSummary } from '../../services/tmdb';
 import { colors, radii, spacing, typography } from '../../theme';
 
@@ -17,6 +18,7 @@ export const MovieRow = memo(function MovieRowView({
   onPress,
   onMore,
 }: MovieRowProps) {
+  const reconnects = useReconnectCount();
   const uri =
     tmdbImageUrl(movie.backdrop_path, 'w300') ??
     tmdbImageUrl(movie.poster_path, 'w342');
@@ -33,7 +35,7 @@ export const MovieRow = memo(function MovieRowView({
       <View style={styles.thumb}>
         {uri ? (
           <Image
-            key={movie.id}
+            key={`${movie.id}-${reconnects}`}
             source={{ uri }}
             style={StyleSheet.absoluteFill}
           />

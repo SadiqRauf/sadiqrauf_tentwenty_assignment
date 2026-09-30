@@ -3,7 +3,10 @@ import { CloudOff } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { OfflineMessage } from '../../components/OfflineMessage';
 import { StateMessage } from '../../components/StateMessage';
+import { isOfflineWithoutData } from '../../hooks/useIsOnline';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useMovieDetails } from '../../hooks/useMovieDetails';
 import { useStatusBarStyle } from '../../hooks/useStatusBar';
 import type { RootStackParamList } from '../../navigation/types';
@@ -21,16 +24,22 @@ export function MovieDetailScreen({ route, navigation }: Props) {
     route.params;
   const { bottom } = useSafeAreaInsets();
   useStatusBarStyle('light-content');
-  const { data: movie, error, isPending, refetch } = useMovieDetails(movieId);
+  const layout = useResponsiveLayout();
+  const details = useMovieDetails(movieId);
+  const { data: movie, error, isPending, refetch } = details;
+  const offline = isOfflineWithoutData(details);
 
   const trailer = useMemo(
     () => movie && pickTrailer(movie.videos.results),
     [movie],
   );
 
-  const imageUri =
-    tmdbImageUrl(posterPath, 'w780') ?? tmdbImageUrl(backdropPath, 'w780');
-  const trailerAction = isPending
+  const imageUri = layout.isLandscape
+    ? tmdbImageUrl(backdropPath, 'w1280') ?? tmdbImageUrl(posterPath, 'w780')
+    : tmdbImageUrl(posterPath, 'w780') ?? tmdbImageUrl(backdropPath, 'w780');
+  const trailerAction = offline
+    ? undefined
+    : isPending
     ? { loading: true }
     : trailer
     ? {
@@ -41,6 +50,13 @@ export function MovieDetailScreen({ route, navigation }: Props) {
     : undefined;
 
   const renderBody = () => {
+    if (offline) {
+      return (
+        <View style={styles.error}>
+          <OfflineMessage subject="This movie's details" />
+        </View>
+      );
+    }
     if (isPending) {
       return <DetailBodySkeleton />;
     }
@@ -58,7 +74,7 @@ export function MovieDetailScreen({ route, navigation }: Props) {
     }
     return (
       <>
-        <View style={styles.section}>
+        <View style={[styles.section, layout.gutter(spacing.xxl)]}>
           {movie.genres.length > 0 ? (
             <>
               <Text style={styles.sectionTitle}>Genres</Text>
@@ -107,8 +123,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   section: {
-    paddingHorizontal: spacing.xxl,
     paddingTop: spacing.xl - 3,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
   },
   sectionTitle: {
     ...typography.sectionTitle,
@@ -123,12 +141,6 @@ const styles = StyleSheet.create({
   overview: {
     ...typography.overview,
     color: colors.textSecondary,
-  },
-  gallery: {
-    paddingTop: spacing.xl,
-  },
-  galleryTitle: {
-    paddingHorizontal: spacing.xxl,
   },
   error: {
     paddingVertical: spacing.xxl,

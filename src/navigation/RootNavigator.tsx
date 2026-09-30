@@ -10,9 +10,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false, orientation: 'portrait_up' }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Tabs" component={TabNavigator} />
       <Stack.Screen name="MovieDetail" component={MovieDetailScreen} />
       <Stack.Screen name="Showtimes" component={ShowtimesScreen} />
@@ -23,7 +21,6 @@ export function RootNavigator() {
         options={{
           presentation: 'fullScreenModal',
           animation: 'fade',
-          orientation: 'all',
         }}
       />
     </Stack.Navigator>

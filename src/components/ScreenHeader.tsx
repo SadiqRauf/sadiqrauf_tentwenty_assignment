@@ -9,10 +9,19 @@ interface ScreenHeaderProps {
 }
 
 export function ScreenHeader({ title, right }: ScreenHeaderProps) {
-  const { top } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: top }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       <View style={styles.bar}>
         <Text style={styles.title} accessibilityRole="header">
           {title}

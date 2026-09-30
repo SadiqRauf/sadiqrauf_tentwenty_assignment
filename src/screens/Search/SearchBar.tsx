@@ -16,10 +16,19 @@ export function SearchBar({
   onSubmit,
   onClear,
 }: SearchBarProps) {
-  const { top } = useSafeAreaInsets();
+  const { top, left, right } = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: top + spacing.md }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: top + spacing.md,
+          paddingLeft: spacing.lg + left,
+          paddingRight: spacing.lg + right,
+        },
+      ]}
+    >
       <View style={styles.field}>
         <Search color={colors.textPrimary} size={18} />
         <TextInput

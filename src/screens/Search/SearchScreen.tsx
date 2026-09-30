@@ -68,6 +68,7 @@ export function SearchScreen({ navigation }: Props) {
           emptyTitle={`No results for "${text.trim()}"`}
           emptyMessage="Check the spelling or try another title."
           errorTitle="Search isn't available right now"
+          offlineSubject="Search results"
           header={
             <View style={styles.resultsHeader}>
               <Text style={styles.resultsTitle}>Top Results</Text>

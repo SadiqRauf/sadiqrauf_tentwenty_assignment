@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import { BottomScrim } from '../../components/BottomScrim';
 import type { GenreTile as GenreTileData } from '../../hooks/useGenres';
+import { useReconnectCount } from '../../hooks/useIsOnline';
 import { tmdbImageUrl } from '../../services/tmdb';
 import { colors, radii, spacing, typography } from '../../theme';
 
@@ -14,6 +15,7 @@ export const GenreTile = memo(function GenreTileView({
   tile,
   onPress,
 }: GenreTileProps) {
+  const reconnects = useReconnectCount();
   const uri = tmdbImageUrl(tile.backdropPath, 'w300');
 
   return (
@@ -23,7 +25,13 @@ export const GenreTile = memo(function GenreTileView({
       onPress={() => onPress(tile)}
       style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
     >
-      {uri ? <Image source={{ uri }} style={StyleSheet.absoluteFill} /> : null}
+      {uri ? (
+        <Image
+          key={reconnects}
+          source={{ uri }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
       <BottomScrim start={0.3} opacity={0.75} />
       <Text style={styles.label} numberOfLines={1}>
         {tile.label}

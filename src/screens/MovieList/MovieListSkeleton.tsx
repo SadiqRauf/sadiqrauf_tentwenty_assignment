@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { colors, radii, spacing } from '../../theme';
 import { MOVIE_CARD_ASPECT_RATIO } from './MovieCard';
 
-const PLACEHOLDER_COUNT = 4;
+const ROWS = 4;
 
-export function MovieListSkeleton() {
+export function MovieListSkeleton({ columns = 1 }: { columns?: number }) {
   const opacity = useRef(new Animated.Value(1)).current;
+  const layout = useResponsiveLayout();
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -29,12 +31,16 @@ export function MovieListSkeleton() {
 
   return (
     <View
-      style={styles.container}
+      style={[styles.container, layout.gutter(spacing.lg)]}
       accessibilityLabel="Loading upcoming movies"
       accessibilityRole="progressbar"
     >
-      {Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => (
-        <Animated.View key={index} style={[styles.card, { opacity }]} />
+      {Array.from({ length: ROWS }, (_, row) => (
+        <View key={row} style={styles.row}>
+          {Array.from({ length: columns }, (__, column) => (
+            <Animated.View key={column} style={[styles.card, { opacity }]} />
+          ))}
+        </View>
       ))}
     </View>
   );
@@ -42,13 +48,17 @@ export function MovieListSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
     gap: spacing.lg,
     overflow: 'hidden',
     flex: 1,
   },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+  },
   card: {
+    flex: 1,
     aspectRatio: MOVIE_CARD_ASPECT_RATIO,
     borderRadius: radii.card,
     backgroundColor: colors.skeleton,

@@ -16,23 +16,29 @@ import { Button } from '../../components/Button';
 import { StackHeader } from '../../components/StackHeader';
 import { StateMessage } from '../../components/StateMessage';
 import { MAX_SEATS, useSeatSelection } from '../../hooks/useSeatSelection';
-import { useShowtime } from '../../hooks/useShowtimes';
+import { useBookSeats, useShowtime } from '../../hooks/useShowtimes';
 import type { RootStackParamList } from '../../navigation/types';
 import { columnCount } from '../../services/booking';
 import { colors, radii, spacing, typography } from '../../theme';
 import { formatLongDate } from '../../utils/format';
-import { ROW_LABEL_WIDTH, SeatMap } from './SeatMap';
+import { ROW_LABEL_WIDTH, SCREEN_HEIGHT, SeatMap } from './SeatMap';
 import { SeatLegend } from './SeatLegend';
 import { SelectedSeatChips } from './SelectedSeatChips';
 
 const ZOOM_LEVELS = [1, 1.5, 2.25];
+const MIN_CELL_SIZE = 8;
+const SIDE_PANEL_WIDTH = 340;
+const MAP_PADDING_HORIZONTAL = spacing.lg * 2;
+const MAP_PADDING_VERTICAL = spacing.lg * 2 + spacing.xxl + spacing.sm;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SeatSelection'>;
 
 export function SeatSelectionScreen({ route, navigation }: Props) {
   const { movieId, title, date, showtimeId } = route.params;
-  const { width } = useWindowDimensions();
-  const { bottom } = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const isLandscape = width > height;
+  const [mapSize, setMapSize] = useState<{ width: number; height: number }>();
   const { data: showtime, isPending } = useShowtime(movieId, date, showtimeId);
 
   const [zoomIndex, setZoomIndex] = useState(0);
@@ -48,13 +54,24 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
     }
   }, [rejections]);
 
+  const bookSeats = useBookSeats(movieId, date);
+
   const onProceed = () => {
+    if (!showtime) {
+      return;
+    }
+    bookSeats.mutate({
+      movieId,
+      showtimeId: showtime.id,
+      seatIds: selectedSeats.map(seat => seat.id),
+      total,
+    });
     const seatList = selectedSeats
       .map(seat => `Row ${seat.row} seat ${seat.number}`)
       .join(', ');
     Alert.alert(
       'Seats reserved',
-      `${seatList}\nTotal: $${total}\n\nPayment isn't part of this demo.`,
+      `${seatList}\nTotal: $${total}\n\nSaved on this device. Payment isn't part of this demo.`,
       [{ text: 'Done', onPress: () => navigation.pop(2) }],
     );
   };
@@ -81,9 +98,41 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
     );
   }
 
-  const columns = columnCount(showtime.layout);
-  const fitCellSize = (width - spacing.lg * 2 - ROW_LABEL_WIDTH) / columns;
+  const availableWidth =
+    (mapSize?.width ?? width) - MAP_PADDING_HORIZONTAL - ROW_LABEL_WIDTH;
+  const availableHeight = mapSize
+    ? mapSize.height - MAP_PADDING_VERTICAL - SCREEN_HEIGHT
+    : Infinity;
+  const fitCellSize = Math.max(
+    MIN_CELL_SIZE,
+    Math.min(
+      availableWidth / columnCount(showtime.layout),
+      availableHeight / showtime.layout.length,
+    ),
+  );
   const cellSize = fitCellSize * ZOOM_LEVELS[zoomIndex];
+
+  const panel = (
+    <>
+      <SeatLegend prices={showtime.prices} />
+      <View style={styles.chips}>
+        <SelectedSeatChips seats={selectedSeats} onRemove={toggle} />
+      </View>
+      <View style={styles.checkout}>
+        <View style={styles.total} accessible>
+          <Text style={styles.totalLabel}>Total Price</Text>
+          <Text style={styles.totalValue}>$ {total}</Text>
+        </View>
+        <Button
+          label="Proceed to pay"
+          size="large"
+          disabled={selectedSeats.length === 0}
+          onPress={onProceed}
+          style={styles.proceed}
+        />
+      </View>
+    </>
+  );
 
   return (
     <View style={styles.screen}>
@@ -95,55 +144,77 @@ export function SeatSelectionScreen({ route, navigation }: Props) {
         onBack={navigation.goBack}
       />
 
-      <View style={styles.mapArea}>
-        <ScrollView contentContainerStyle={styles.mapScrollVertical}>
+      <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
+        <View
+          style={[
+            styles.mapArea,
+            {
+              paddingLeft: insets.left,
+              paddingRight: isLandscape ? 0 : insets.right,
+              paddingBottom: isLandscape ? insets.bottom : 0,
+            },
+          ]}
+        >
           <ScrollView
-            horizontal
-            contentContainerStyle={styles.mapScrollHorizontal}
+            contentContainerStyle={styles.mapScrollVertical}
+            onLayout={event => setMapSize(event.nativeEvent.layout)}
           >
-            <SeatMap
-              layout={showtime.layout}
-              cellSize={cellSize}
-              selectedIds={selectedIds}
-              prices={showtime.prices}
-              onToggle={toggle}
-            />
+            <ScrollView
+              horizontal
+              contentContainerStyle={styles.mapScrollHorizontal}
+            >
+              <SeatMap
+                layout={showtime.layout}
+                cellSize={cellSize}
+                selectedIds={selectedIds}
+                prices={showtime.prices}
+                onToggle={toggle}
+              />
+            </ScrollView>
           </ScrollView>
-        </ScrollView>
-        <View style={styles.zoom}>
-          <ZoomButton
-            icon={Plus}
-            label="Zoom in"
-            disabled={zoomIndex === ZOOM_LEVELS.length - 1}
-            onPress={() => setZoomIndex(i => i + 1)}
-          />
-          <ZoomButton
-            icon={Minus}
-            label="Zoom out"
-            disabled={zoomIndex === 0}
-            onPress={() => setZoomIndex(i => i - 1)}
-          />
-        </View>
-      </View>
-
-      <View style={[styles.panel, { paddingBottom: bottom + spacing.lg }]}>
-        <SeatLegend prices={showtime.prices} />
-        <View style={styles.chips}>
-          <SelectedSeatChips seats={selectedSeats} onRemove={toggle} />
-        </View>
-        <View style={styles.checkout}>
-          <View style={styles.total} accessible>
-            <Text style={styles.totalLabel}>Total Price</Text>
-            <Text style={styles.totalValue}>$ {total}</Text>
+          <View style={styles.zoom}>
+            <ZoomButton
+              icon={Plus}
+              label="Zoom in"
+              disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+              onPress={() => setZoomIndex(i => i + 1)}
+            />
+            <ZoomButton
+              icon={Minus}
+              label="Zoom out"
+              disabled={zoomIndex === 0}
+              onPress={() => setZoomIndex(i => i - 1)}
+            />
           </View>
-          <Button
-            label="Proceed to pay"
-            size="large"
-            disabled={selectedSeats.length === 0}
-            onPress={onProceed}
-            style={styles.proceed}
-          />
         </View>
+
+        {isLandscape ? (
+          <ScrollView
+            style={styles.sidePanel}
+            contentContainerStyle={[
+              styles.panel,
+              {
+                paddingRight: spacing.lg + insets.right,
+                paddingBottom: insets.bottom + spacing.lg,
+              },
+            ]}
+          >
+            {panel}
+          </ScrollView>
+        ) : (
+          <View
+            style={[
+              styles.panel,
+              {
+                paddingLeft: spacing.lg + insets.left,
+                paddingRight: spacing.lg + insets.right,
+                paddingBottom: insets.bottom + spacing.lg,
+              },
+            ]}
+          >
+            {panel}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -180,8 +251,19 @@ const styles = StyleSheet.create({
   status: {
     marginTop: spacing.xxl,
   },
+  body: {
+    flex: 1,
+  },
+  bodyLandscape: {
+    flexDirection: 'row',
+  },
   mapArea: {
     flex: 1,
+  },
+  sidePanel: {
+    width: SIDE_PANEL_WIDTH,
+    flexGrow: 0,
+    backgroundColor: colors.surface,
   },
   mapScrollVertical: {
     flexGrow: 1,
@@ -219,7 +301,7 @@ const styles = StyleSheet.create({
   },
   panel: {
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
+    paddingLeft: spacing.lg,
     paddingTop: spacing.xl - 2,
   },
   chips: {

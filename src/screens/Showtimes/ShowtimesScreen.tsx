@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { StackHeader } from '../../components/StackHeader';
 import { StateMessage } from '../../components/StateMessage';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useShowtimes } from '../../hooks/useShowtimes';
 import type { RootStackParamList } from '../../navigation/types';
 import { getShowDates, type Showtime } from '../../services/booking';
@@ -20,11 +21,14 @@ import { formatReleaseLabel } from '../../utils/format';
 import { DateChips } from './DateChips';
 import { ShowtimeCard } from './ShowtimeCard';
 
+const PORTRAIT_TOP_GAP = 100;
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Showtimes'>;
 
 export function ShowtimesScreen({ route, navigation }: Props) {
   const { movieId, title, releaseDate } = route.params;
   const { bottom } = useSafeAreaInsets();
+  const layout = useResponsiveLayout();
 
   const dates = useMemo(() => getShowDates(releaseDate), [releaseDate]);
   const [date, setDate] = useState(dates[0]);
@@ -82,15 +86,31 @@ export function ShowtimesScreen({ route, navigation }: Props) {
         subtitle={formatReleaseLabel(releaseDate)}
         onBack={navigation.goBack}
       />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          {
+            paddingTop: layout.isLandscape ? spacing.lg : PORTRAIT_TOP_GAP,
+            paddingLeft: layout.insets.left,
+            paddingRight: layout.insets.right,
+          },
+          styles.content,
+        ]}
+      >
         <Text style={styles.sectionTitle}>Date</Text>
         <DateChips dates={dates} selected={date} onSelect={setDate} />
         <View style={styles.showtimesArea}>{renderShowtimes()}</View>
       </ScrollView>
-      <View style={[styles.footer, { paddingBottom: bottom + spacing.lg }]}>
+      <View
+        style={[
+          styles.footer,
+          layout.gutter(spacing.lg),
+          { paddingBottom: bottom + spacing.lg },
+        ]}
+      >
         <Button
           label="Select Seats"
           size="large"
+          style={styles.cta}
           disabled={!selected}
           onPress={() =>
             selected &&
@@ -113,7 +133,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    paddingTop: 100,
     paddingBottom: spacing.lg,
   },
   sectionTitle: {
@@ -134,7 +153,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxl,
   },
   footer: {
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+  },
+  cta: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
   },
 });

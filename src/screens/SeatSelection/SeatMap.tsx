@@ -7,7 +7,7 @@ import { columnCount, type Seat, type SeatRow } from '../../services/booking';
 import { colors, fonts, spacing, typography } from '../../theme';
 
 export const ROW_LABEL_WIDTH = 16;
-const SCREEN_HEIGHT = 34;
+export const SCREEN_HEIGHT = 34;
 
 interface SeatMapProps {
   layout: SeatRow[];

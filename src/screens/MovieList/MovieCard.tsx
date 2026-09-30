@@ -1,6 +1,7 @@
 import { ImageOff } from 'lucide-react-native';
 import { memo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useReconnectCount } from '../../hooks/useIsOnline';
 import { BottomScrim } from '../../components/BottomScrim';
 import { tmdbImageUrl, type MovieSummary } from '../../services/tmdb';
 import { colors, radii, spacing, typography } from '../../theme';
@@ -13,7 +14,9 @@ interface MovieCardProps {
 }
 
 function MovieCardView({ movie, onPress }: MovieCardProps) {
-  const [failed, setFailed] = useState(false);
+  const reconnects = useReconnectCount();
+  const [failedAt, setFailedAt] = useState<number>();
+  const failed = failedAt === reconnects;
   const uri =
     tmdbImageUrl(movie.backdrop_path, 'w780') ??
     tmdbImageUrl(movie.poster_path, 'w780');
@@ -28,11 +31,11 @@ function MovieCardView({ movie, onPress }: MovieCardProps) {
     >
       {showImage ? (
         <Image
-          key={movie.id}
+          key={`${movie.id}-${reconnects}`}
           source={{ uri }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
-          onError={() => setFailed(true)}
+          onError={() => setFailedAt(reconnects)}
         />
       ) : (
         <View style={styles.fallback}>

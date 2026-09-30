@@ -29,6 +29,7 @@ function QueryResults({
         emptyTitle={`No results for "${query}"`}
         emptyMessage="Check the spelling or try another title."
         errorTitle="Search isn't available right now"
+        offlineSubject="Search results"
         header={<View style={styles.spacer} />}
       />
     </>
@@ -52,6 +53,7 @@ function GenreResults({
         result={result}
         emptyTitle={`No ${genreName.toLowerCase()} yet`}
         errorTitle={`Couldn't load ${genreName.toLowerCase()}`}
+        offlineSubject={genreName}
         header={<View style={styles.spacer} />}
       />
     </>

@@ -16,10 +16,15 @@ export function StackHeader({
   align = 'center',
   onBack,
 }: StackHeaderProps) {
-  const { top } = useSafeAreaInsets();
+  const { top, left, right } = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: top }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: top, paddingLeft: left, paddingRight: right },
+      ]}
+    >
       <View style={styles.bar}>
         <Pressable
           accessibilityRole="button"

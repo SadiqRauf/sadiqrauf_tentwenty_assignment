@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomScrim } from '../../components/BottomScrim';
 import { Button } from '../../components/Button';
+import { useReconnectCount } from '../../hooks/useIsOnline';
 import { colors, spacing, typography } from '../../theme';
 import { TrailerButton } from './TrailerButton';
 
@@ -32,13 +33,16 @@ export function DetailHeader({
   onGetTickets,
   onBack,
 }: DetailHeaderProps) {
-  const { height } = useWindowDimensions();
-  const { top } = useSafeAreaInsets();
+  const { height, width } = useWindowDimensions();
+  const { top, left } = useSafeAreaInsets();
+  const reconnects = useReconnectCount();
+  const headerHeight = width > height ? height : height * HEADER_HEIGHT_RATIO;
 
   return (
-    <View style={[styles.container, { height: height * HEADER_HEIGHT_RATIO }]}>
+    <View style={[styles.container, { height: headerHeight }]}>
       {imageUri ? (
         <Image
+          key={reconnects}
           source={{ uri: imageUri }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
@@ -55,7 +59,10 @@ export function DetailHeader({
         accessibilityLabel="Back to Watch"
         onPress={onBack}
         hitSlop={spacing.md}
-        style={[styles.back, { top: top + spacing.md }]}
+        style={[
+          styles.back,
+          { top: top + spacing.md, left: spacing.md + left },
+        ]}
       >
         <ChevronLeft color={colors.textOnImage} size={24} />
         <Text style={styles.backLabel}>Watch</Text>
@@ -91,7 +98,6 @@ const styles = StyleSheet.create({
   },
   back: {
     position: 'absolute',
-    left: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,

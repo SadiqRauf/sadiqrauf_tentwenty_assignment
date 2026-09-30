@@ -123,6 +123,7 @@ export function useGenreTiles() {
   return {
     tiles,
     isPending: genres.isPending,
+    fetchStatus: genres.fetchStatus,
     isError: genres.isError,
     refetch: genres.refetch,
   };

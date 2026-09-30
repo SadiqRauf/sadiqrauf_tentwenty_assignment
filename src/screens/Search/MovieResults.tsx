@@ -2,10 +2,13 @@ import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 import { CloudOff, SearchX } from 'lucide-react-native';
 import { useCallback, type ReactElement } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { OfflineMessage } from '../../components/OfflineMessage';
 import { PaginationFooter } from '../../components/PaginationFooter';
 import { StateMessage } from '../../components/StateMessage';
 import { useTabBarHeight } from '../../components/TabBar';
 import { useGenreNames } from '../../hooks/useGenres';
+import { isOfflineWithoutData } from '../../hooks/useIsOnline';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import type { useInfiniteMovies } from '../../hooks/useInfiniteMovies';
 import { useMovieActions, useOpenMovie } from '../../hooks/useOpenMovie';
 import type { MovieSummary } from '../../services/tmdb';
@@ -17,6 +20,7 @@ interface MovieResultsProps {
   emptyTitle: string;
   emptyMessage?: string;
   errorTitle: string;
+  offlineSubject: string;
   header?: ReactElement;
 }
 
@@ -28,15 +32,18 @@ export function MovieResults({
   emptyTitle,
   emptyMessage,
   errorTitle,
+  offlineSubject,
   header,
 }: MovieResultsProps) {
   const tabBarHeight = useTabBarHeight();
+  const layout = useResponsiveLayout();
   const genreNames = useGenreNames();
   const openMovie = useOpenMovie();
   const showActions = useMovieActions();
   const {
     data,
     isPending,
+    fetchStatus,
     isError,
     error,
     refetch,
@@ -69,6 +76,9 @@ export function MovieResults({
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   const renderBody = () => {
+    if (isOfflineWithoutData({ isPending, fetchStatus })) {
+      return <OfflineMessage subject={offlineSubject} />;
+    }
     if (isPending) {
       return <ActivityIndicator style={styles.status} color={colors.accent} />;
     }
@@ -99,7 +109,13 @@ export function MovieResults({
   return (
     <View style={styles.container}>
       {body ? (
-        <View style={[styles.state, { paddingBottom: tabBarHeight }]}>
+        <View
+          style={[
+            styles.state,
+            layout.gutter(HORIZONTAL_INSET),
+            { paddingBottom: tabBarHeight },
+          ]}
+        >
           {header}
           {body}
         </View>
@@ -123,7 +139,7 @@ export function MovieResults({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentContainerStyle={{
-            paddingHorizontal: HORIZONTAL_INSET,
+            ...layout.gutter(HORIZONTAL_INSET),
             paddingBottom: tabBarHeight + spacing.lg,
           }}
           scrollIndicatorInsets={{ bottom: tabBarHeight }}
@@ -141,7 +157,6 @@ const styles = StyleSheet.create({
   },
   state: {
     flex: 1,
-    paddingHorizontal: HORIZONTAL_INSET,
   },
   separator: {
     height: spacing.lg,
